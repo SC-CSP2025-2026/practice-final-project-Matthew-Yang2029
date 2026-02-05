@@ -1,0 +1,67 @@
+@import url("https://fonts.googleapis.com/css2?family=Bungee&family=Cedarville+Cursive&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap");
+body {
+  font-family: "Open Sans", sans-serif;
+}
+h1 {
+  font-family: "Bungee", cursive;
+}
+
+/* Quiz Styles */
+.answer-box {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid #dee2e6;
+}
+
+.answer-box:hover {
+  transform: scale(1.02);
+  border-color: #0d6efd;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.answer-box.selected {
+  border-color: #0d6efd;
+  background-color: #e7f1ff;
+}
+
+.answer-box.correct {
+  border-color: #198754;
+  background-color: #d1e7dd;
+}
+
+.answer-box.incorrect {
+  border-color: #dc3545;
+  background-color: #f8d7da;
+}
+
+/* Mode Selection Cards */
+.mode-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 3px solid #dee2e6;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mode-card:hover {
+  transform: translateY(-5px);
+  border-color: #0d6efd;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.mode-card h2 {
+  font-family: "Bungee", cursive;
+  font-size: 1.5rem;
+}
+
+#multiple-choice-btn:hover {
+  border-color: #6f42c1;
+  background-color: #f8f5ff;
+}
+
+#true-false-btn:hover {
+  border-color: #20c997;
+  background-color: #f0fff9;
+}
