@@ -2,6 +2,7 @@
 let currentMode = null;
 let questions = [];
 let currentQuestionIndex = 0;
+let currentShuffledOptions = [];
 const MAX_QUESTIONS = 7;
 
 // DOM Elements
@@ -15,9 +16,10 @@ const multipleChoiceAnswers = document.getElementById(
 );
 const trueFalseAnswers = document.getElementById("true-false-answers");
 const questionElement = document.getElementById("question");
-const questionImage = document.getElementById("question-image");
+const gameNameElement = document.getElementById("game-name");
 const progressElement = document.getElementById("progress");
 const nextBtn = document.getElementById("next-btn");
+const playAgainElement = document.getElementById("play-again");
 
 // API Configuration
 const options = {
@@ -36,6 +38,7 @@ function startQuiz(mode) {
   startPage.classList.add("d-none");
   quizPage.classList.remove("d-none");
   questionElement.textContent = "Loading questions...";
+  //playAgainElement.textContent = "";
 
   if (mode === "multiple-choice") {
     multipleChoiceAnswers.classList.remove("d-none");
@@ -109,16 +112,16 @@ function displayQuestion() {
   // Update progress
   progressElement.textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
 
+  // Update game name if available
+  if (question.extra && question.extra.content) {
+    gameNameElement.textContent = question.extra.content;
+    gameNameElement.classList.remove("d-none");
+  } else {
+    gameNameElement.classList.add("d-none");
+  }
+
   // Update question text
   questionElement.textContent = question.question;
-
-  // Update image if available
-  if (question.image) {
-    questionImage.src = question.image;
-    questionImage.classList.remove("d-none");
-  } else {
-    questionImage.classList.add("d-none");
-  }
 
   // Clear previous selections
   document.querySelectorAll(".answer-box").forEach((box) => {
@@ -145,13 +148,16 @@ function displayMultipleChoiceAnswers(question) {
   const answerD = document.getElementById("answer-d");
 
   // Combine correct and incorrect answers, then shuffle
-  const allOptions = [question.options.correct, ...question.options.incorrect];
-  shuffleArray(allOptions);
+  currentShuffledOptions = [
+    question.options.correct,
+    ...question.options.incorrect,
+  ];
+  shuffleArray(currentShuffledOptions);
 
-  answerA.textContent = `A. ${allOptions[0]}`;
-  answerB.textContent = `B. ${allOptions[1]}`;
-  answerC.textContent = `C. ${allOptions[2]}`;
-  answerD.textContent = `D. ${allOptions[3]}`;
+  answerA.textContent = `A. ${currentShuffledOptions[0]}`;
+  answerB.textContent = `B. ${currentShuffledOptions[1]}`;
+  answerC.textContent = `C. ${currentShuffledOptions[2]}`;
+  answerD.textContent = `D. ${currentShuffledOptions[3]}`;
 }
 
 // Display true/false answers
@@ -172,10 +178,50 @@ function shuffleArray(array) {
 
 // Handle answer selection
 function handleAnswerClick(event) {
+  const clickedBox = event.target.closest(".answer-box");
+  if (!clickedBox) return;
+
+  const question = questions[currentQuestionIndex];
+  const correctAnswer = question.options.correct;
+
   // Disable further clicks
   document.querySelectorAll(".answer-box").forEach((box) => {
     box.style.pointerEvents = "none";
   });
+
+  // Determine if the clicked answer is correct
+  let isCorrect = false;
+
+  if (currentMode === "multiple-choice") {
+    // Map data-answer (A/B/C/D) to the shuffled option index
+    const answerMap = { A: 0, B: 1, C: 2, D: 3 };
+    const selectedIndex = answerMap[clickedBox.dataset.answer];
+    const selectedText = currentShuffledOptions[selectedIndex];
+    isCorrect = selectedText === correctAnswer;
+
+    // Always highlight the correct answer green
+    const correctIndex = currentShuffledOptions.indexOf(correctAnswer);
+    const correctLetter = ["A", "B", "C", "D"][correctIndex];
+    const correctBox = multipleChoiceAnswers.querySelector(
+      `[data-answer="${correctLetter}"]`,
+    );
+    correctBox.classList.add("correct");
+  } else {
+    // True/False mode
+    const selectedValue = clickedBox.dataset.answer;
+    isCorrect = selectedValue === String(correctAnswer).toLowerCase();
+
+    // Always highlight the correct answer green
+    const correctBox = trueFalseAnswers.querySelector(
+      `[data-answer="${String(correctAnswer).toLowerCase()}"]`,
+    );
+    correctBox.classList.add("correct");
+  }
+
+  // If the user picked wrong, also mark their selection red
+  if (!isCorrect) {
+    clickedBox.classList.add("incorrect");
+  }
 
   // Show next button
   nextBtn.classList.remove("d-none");
@@ -190,8 +236,9 @@ function nextQuestion() {
 // Show results when quiz is complete
 function showResults() {
   questionElement.textContent = "Quiz Complete!";
+  playAgainElement.textContent = "Reload to play again.";
   progressElement.textContent = `You answered ${questions.length} questions`;
-  questionImage.classList.add("d-none");
+  gameNameElement.classList.add("d-none");
   multipleChoiceAnswers.classList.add("d-none");
   trueFalseAnswers.classList.add("d-none");
   nextBtn.classList.add("d-none");
